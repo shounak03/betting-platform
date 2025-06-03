@@ -5,7 +5,8 @@ use anchor_lang::solana_program::{system_instruction::transfer, program::{invoke
 declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
 
 const _PLATFORM_FEE:u32 =   10;
-const RESOLUTION_DEADLINE:u64 = 48*60*60;
+// 12 hr resolution deadline
+const RESOLUTION_DEADLINE:u64 = 12*60*60;
 const ANCHOR_SPACE_DENOMINATOR:usize = 8;
 
 #[program]
@@ -34,6 +35,11 @@ pub mod betting_platform {
                       end_time: u64,
                       betting_amount:u64
     ) -> Result<()> {
+
+        require!(title.len() <= 100,BettingError::TitleTooLong);
+        require!(description.len() <= 200,BettingError::DescriptionTooLong);
+        require!(end_time > Clock::get()?.unix_timestamp as u64, BettingError::BetEnded);
+        require!(resolver != ctx.accounts.creator.key(), BettingError::ResolverCannotBeCreator);
 
         let bet = &mut ctx.accounts.bet;
 
@@ -78,9 +84,9 @@ pub mod betting_platform {
         //checking some imp condition before placing the bet. throws error if fails
         require!(bet.status == BetStatus::Active,BettingError::BetNotActive);
         require!(Clock::get()?.unix_timestamp < bet.end_time as i64 ,BettingError::BetEnded);
-        require!(amount != bet.betting_amount,BettingError::InvalidAmount);
+        require!(amount == bet.betting_amount,BettingError::InvalidAmount);
         require!(ctx.accounts.bettor.key() != bet.resolver,BettingError::ResolverCannotPlaceBet);
-        require!(ctx.accounts.user_bet.amount != 0,BettingError::BetCanOnlyBePlacedOnce);
+        require!(ctx.accounts.user_bet.amount == 0,BettingError::BetCanOnlyBePlacedOnce);
 
 
         //Transfering the bet amount to vault
@@ -144,7 +150,7 @@ pub mod betting_platform {
 
         require!(bet.status == BetStatus::Active,BettingError::BetNotActive);
         require!(clock.unix_timestamp as u64 >= bet.end_time, BettingError::BetNotEnded);
-        require!(clock.unix_timestamp as u64 >= bet.resolution_deadline,BettingError::ResolutionDeadlineExpired);
+        require!(clock.unix_timestamp as u64 <= bet.resolution_deadline,BettingError::ResolutionDeadlineExpired);
         require!(ctx.accounts.resolver.key() == bet.resolver,BettingError::UnauthorizedResolver);
 
         bet.status = BetStatus::Resolved;
@@ -375,9 +381,9 @@ pub struct Platform{
 pub struct Bet{
     pub id: u64,
     pub creator: Pubkey,
-    #[max_len(50)]
-    pub title: String,
     #[max_len(100)]
+    pub title: String,
+    #[max_len(200)]
     pub description: String,
     pub betting_amount:u64,
     pub resolver: Pubkey,
