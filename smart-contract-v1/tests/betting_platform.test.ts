@@ -3,7 +3,6 @@ import { Program } from "@coral-xyz/anchor";
 import { BettingPlatform } from "../target/types/betting_platform";
 import { PublicKey, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { expect } from "chai";
-import { error } from "console";
 
 interface Err{
   message:string;

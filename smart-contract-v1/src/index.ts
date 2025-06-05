@@ -1,1 +1,1 @@
-export * from './basic-exports'
+export * from './betting-exports'
