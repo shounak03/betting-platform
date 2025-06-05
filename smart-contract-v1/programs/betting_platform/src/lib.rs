@@ -4,10 +4,11 @@ use anchor_lang::solana_program::clock::Clock;
 use anchor_lang::solana_program::{system_instruction::transfer, program::{invoke_signed,invoke}};
 declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
 
-const _PLATFORM_FEE:u32 =   10;
+const PLATFORM_FEE_PERCENTAGE:u64 =   10;
 // 12 hr resolution deadline
 const RESOLUTION_DEADLINE:u64 = 12*60*60;
 const ANCHOR_SPACE_DENOMINATOR:usize = 8;
+const RESOLVER_FEE: u64 = 1;
 
 #[program]
 pub mod betting_platform {
@@ -155,7 +156,33 @@ pub mod betting_platform {
 
         bet.status = BetStatus::Resolved;
         bet.winner = Some(winner.clone());
-       
+
+        // Transfer resolver fee to resolver
+        let resolver_fee_amount = (bet.total_amount * RESOLVER_FEE) / 100;
+        
+        let bet_id_bytes = bet_id.to_le_bytes();
+        let bet_vault_seeds = &[
+            b"bet_vault",
+            bet_id_bytes.as_ref(),
+            &[ctx.bumps.bet_vault],
+        ];
+        let signer_seeds = &[&bet_vault_seeds[..]];
+
+        let transfer_instruction = transfer(
+            &ctx.accounts.bet_vault.key(),
+            &ctx.accounts.resolver.key(),
+            resolver_fee_amount,
+        );
+
+        invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.bet_vault.to_account_info(),
+                ctx.accounts.resolver.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            signer_seeds,
+        )?;
         emit!(BetResolved{
             bet_id,
             winner,
@@ -176,12 +203,14 @@ pub mod betting_platform {
         require!(user_bet.bettor == ctx.accounts.bettor.key(),BettingError::Unauthorized);
         require!(!user_bet.claimed,BettingError::AlreadyClaimed);
 
+        
+
         let winner = bet.winner.clone().unwrap();
         require!(user_bet.side == winner,BettingError::NotWinner);
 
         let winning_amount = ((bet.total_amount * 90) / 100)/bet.participants;
 
-        let bet_id_bytes = bet.id.to_le_bytes();
+        let bet_id_bytes = bet_id.to_le_bytes();
         let bet_vault_seeds = &[
             b"bet_vault",
             bet_id_bytes.as_ref(),
@@ -205,11 +234,6 @@ pub mod betting_platform {
             signer_seeds,
         )?;
 
-        // **ctx.accounts.bet_vault.to_account_info().try_borrow_mut_lamports()? -= winning_amount;
-        // **ctx.accounts.bettor.to_account_info().try_borrow_mut_lamports()? += winning_amount;
-
-
-       
         
         let user_bet = &mut ctx.accounts.user_bet;
         user_bet.claimed = true;
@@ -223,10 +247,103 @@ pub mod betting_platform {
         Ok(())
     }
     
-    // // pub fn claim_platform_fees(_ctx: Context<Initialize>) -> Result<()> {
+    pub fn claim_refund(ctx: Context<RefundBet>,
+                        bet_id: u64)
+     -> Result<()> {
+        let bet = & mut ctx.accounts.bet;
+        let user_bet = &ctx.accounts.user_bet;
+        let clock = Clock::get()?;
 
-    //     Ok(())
-    // }
+        require!(bet.status == BetStatus::Active,BettingError::BetNotActive);
+        require!(clock.unix_timestamp as u64 > bet.resolution_deadline,BettingError::ResolutionDeadlineNotPassed);
+        require!(user_bet.bettor == ctx.accounts.bettor.key(), BettingError::Unauthorized);
+        require!(!user_bet.claimed, BettingError::AlreadyClaimed);
+
+        // Mark bet as refunded if not already
+        if bet.status != BetStatus::Refunded {
+            bet.status = BetStatus::Refunded;
+        }
+
+        // Refund user's bet amount
+        let bet_id_bytes = bet_id.to_le_bytes();
+        let bet_seeds = &[
+            b"bet",
+            bet_id_bytes.as_ref(),
+            &[bet.bump],
+        ];
+
+        let signer_seeds = &[&bet_seeds[..]];
+
+        let transfer_instruction = transfer(
+            &ctx.accounts.bet_vault.key(),
+            &ctx.accounts.bettor.key(),
+            user_bet.amount,
+        );
+
+        invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.bet_vault.to_account_info(),
+                ctx.accounts.bettor.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            signer_seeds,
+        )?;
+
+        // Mark as claimed (refunded)
+        let user_bet = &mut ctx.accounts.user_bet;
+        user_bet.claimed = true;
+
+        emit!(BetRefunded {
+            bet_id,
+            bettor: ctx.accounts.bettor.key(),
+            amount: user_bet.amount,
+        });
+        Ok(())
+    }
+    
+    pub fn claim_platform_fees(ctx: Context<ClaimPlatformFees>, 
+                                bet_id: u64
+                                ) -> Result<()> {
+        let bet = &ctx.accounts.bet;
+        require!(bet.status == BetStatus::Resolved, BettingError::BetNotEnded);
+        require!(
+            ctx.accounts.authority.key() == ctx.accounts.platform.authority,
+            BettingError::Unauthorized
+        );
+
+        let platform_fee = (bet.total_amount * PLATFORM_FEE_PERCENTAGE) / 100;
+
+        // Transfer platform fee from bet vault to platform authority
+        let bet_id_bytes = bet_id.to_le_bytes();
+        let bet_vault_seeds = &[
+            b"bet_vault",
+            bet_id_bytes.as_ref(),
+            &[ctx.bumps.bet_vault],
+        ];
+
+        let signer_seeds = &[&bet_vault_seeds[..]];
+
+
+        let transfer_instruction = transfer(
+            &ctx.accounts.bet_vault.key(),
+            &ctx.accounts.authority.key(),
+            platform_fee
+        );
+
+        invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.bet_vault.to_account_info(),
+                ctx.accounts.authority.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            signer_seeds,
+        )?;
+
+        Ok(())
+    }
+
 }
 
 
@@ -324,6 +441,7 @@ pub struct PlaceBet<'info>{
 
 #[derive(Accounts)]
 #[instruction(bet_id: u64)]
+
 pub struct ResolveBet<'info>{
     #[account(
         mut,
@@ -332,7 +450,18 @@ pub struct ResolveBet<'info>{
     )]
     pub bet: Account<'info,Bet>,
 
-    pub resolver: Signer<'info>
+    /// CHECK: This is the bet vault that will hold the SOL for this bet
+    #[account(
+        mut,
+        seeds = [b"bet_vault",&bet_id.to_le_bytes()],
+        bump
+    )]
+    pub bet_vault: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub resolver: Signer<'info>,
+
+    pub system_program: Program<'info,System>
 }
 
 #[derive(Accounts)]
@@ -362,8 +491,65 @@ pub struct ClaimWinnings<'info>{
 
     pub system_program: Program<'info,System>
 }
+#[derive(Accounts)]
+#[instruction(bet_id: u64)]
+pub struct RefundBet<'info> {
+    #[account(
+        mut,
+        seeds = [b"bet", &bet_id.to_le_bytes()],
+        bump = bet.bump
+    )]
+    pub bet: Account<'info, Bet>,
 
+    /// CHECK: This is the bet vault that holds the SOL for this bet
+    #[account(
+        mut,
+        seeds = [b"bet_vault", &bet_id.to_le_bytes()],
+        bump
+    )]
+    pub bet_vault: AccountInfo<'info>,
 
+    #[account(
+        mut,
+        seeds = [b"user_bet", &bet_id.to_le_bytes(), bettor.key().as_ref()],
+        bump = user_bet.bump
+    )]
+    pub user_bet: Account<'info, UserBet>,
+
+    #[account(mut)]
+    pub bettor: Signer<'info>,
+
+    pub system_program: Program<'info,System>
+}
+
+#[derive(Accounts)]
+#[instruction(bet_id: u64)]
+pub struct ClaimPlatformFees<'info> {
+    #[account(
+        seeds = [b"bet", &bet_id.to_le_bytes()],
+        bump = bet.bump
+    )]
+    pub bet: Account<'info, Bet>,
+
+    /// CHECK: This is the bet vault that holds the SOL for this bet
+    #[account(
+        mut,
+        seeds = [b"bet_vault", &bet_id.to_le_bytes()],
+        bump 
+    )]
+    pub bet_vault: AccountInfo<'info>,
+
+    #[account(
+        seeds = [b"platform"],
+        bump = platform.bump
+    )]
+    pub platform: Account<'info, Platform>,
+
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    pub system_program: Program<'info,System>
+}
 
 
 ///Data Structures
