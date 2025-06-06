@@ -10,21 +10,19 @@ export { BettingPlatform, BettingPlatformIDL }
 // The programId is imported from the program IDL.
 export const PROGRAM_ID = new PublicKey(BettingPlatformIDL.address)
 
-// This is a helper function to get the Basic Anchor program.
+// This is a helper function to get the Betting Anchor program.
 export function getBettingProgram(provider: AnchorProvider, address?: PublicKey): Program<BettingPlatform> {
   return new Program({ ...BettingPlatformIDL, address: address ? address.toBase58() : BettingPlatformIDL.address } as BettingPlatform, provider)
 }
 
-// This is a helper function to get the program ID for the Basic program depending on the cluster.
+// This is a helper function to get the program ID for the Betting program depending on the cluster.
 export function getBettingProgramId(cluster: Cluster) {
   switch (cluster) {
     case 'devnet':
     case 'testnet':
-      // This is the program ID for the Basic program on devnet and testnet.
-      return new PublicKey('6z68wfurCMYkZG51s1Et9BJEd9nJGUusjHXNt4dGbNNF')
     case 'mainnet-beta':
     default:
+      // Use the program ID from the IDL for all clusters since we're using the same deployed program
       return PROGRAM_ID
-      
   }
 }

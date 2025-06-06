@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
 
 use anchor_lang::solana_program::{system_instruction::transfer, program::{invoke_signed,invoke}};
-declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
+declare_id!("9cYmSE5UGJ1JXkJcJvc5dKkGeHUr7PJbY1iHjjrLxfnF");
 
 const PLATFORM_FEE_PERCENTAGE:u64 =   10;
 // 12 hr resolution deadline
