@@ -96,11 +96,14 @@ export function InitializePlatform() {
   )
 }
 
+//get the user public key from the wallet and use it as the creatorId in the createBet API call
+
 
 
 // Create Bet Component
 export function CreateBetForm() {
   const { createBet } = useBettingProgram()
+  const { publicKey } = useWallet()
   const [formData, setFormData] = useState({
     betId: '',
     title: '',
@@ -112,17 +115,22 @@ export function CreateBetForm() {
   const [isOpen, setIsOpen] = useState(false)
 
   const handleSubmit = async () => {
+    if (!publicKey) {
+      toast.error('Please connect your wallet first')
+      return
+    }
+
     try {
       const endTimeTimestamp = Math.floor(new Date(formData.endTime).getTime() / 1000)
       const bettingAmountLamports = parseFloat(formData.bettingAmount) * LAMPORTS_PER_SOL
 
-      const res = await fetch('/api/betting', {
+      const betId = await fetch('/api/betting', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // creatorId: 
+          creatorId: publicKey.toString(),
           title: formData.title,
           description: formData.description,
           resolverId: formData.resolver,
@@ -131,14 +139,23 @@ export function CreateBetForm() {
         })
       })
 
-      await createBet.mutateAsync({
-        betId: parseInt(formData.betId),
-        title: formData.title,
-        description: formData.description,
-        resolver: new PublicKey(formData.resolver),
-        endTime: endTimeTimestamp,
-        bettingAmount: bettingAmountLamports,
-      })
+      if (!betId.ok) {
+        throw new Error('Failed to create bet in database')
+      }
+
+      const response = await betId.json()
+      console.log('Bet created with ID:', response.betId);
+      
+      const receivedBetId = response.betId
+
+      // await createBet.mutateAsync({
+      //   betId: receivedBetId,
+      //   title: formData.title,
+      //   description: formData.description,
+      //   resolver: new PublicKey(formData.resolver),
+      //   endTime: endTimeTimestamp,
+      //   bettingAmount: bettingAmountLamports,
+      // })
 
       setFormData({
         betId: '',
@@ -171,7 +188,7 @@ export function CreateBetForm() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          {/* <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="bet-id" className="text-right">
               Bet ID
             </Label>
@@ -183,7 +200,7 @@ export function CreateBetForm() {
               className="col-span-3"
               placeholder="Unique bet ID"
             />
-          </div>
+          </div> */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">
               Title

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
                 creatorId,
                 description,
                 resolverId,
-                endTime: new Date(endTime),
+                endTime,
                 amount
             }
         })

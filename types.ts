@@ -5,6 +5,6 @@ export const bettingSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   resolverId: z.string().min(1, "Resolver is required"),
-  endTime: z.string().min(1, "End time is required"),
+  endTime: z.number().min(1, "End time is required"),
   amount: z.number().min(1, "Betting amount must be greater than 0"),
 });

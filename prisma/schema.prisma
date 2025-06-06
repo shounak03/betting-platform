@@ -21,7 +21,7 @@ model bet{
   description String
   amount Float
   resolverId String
-  endTime DateTime
+  endTime Int
   winner String?
   status String @default("open") // open, closed, cancelled
   createdAt DateTime @default(now())
