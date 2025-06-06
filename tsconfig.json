@@ -20,7 +20,7 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@project/anchor": ["anchor/src"],
+      "@project/anchor": ["smart-contract-v1/src"],
       "@/*": ["./src/*"]
     }
   },
