@@ -1,3 +1,4 @@
+
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
 
@@ -9,6 +10,7 @@ const PLATFORM_FEE_PERCENTAGE:u64 =   10;
 const RESOLUTION_DEADLINE:u64 = 12*60*60;
 const ANCHOR_SPACE_DENOMINATOR:usize = 8;
 const RESOLVER_FEE: u64 = 1;
+
 
 #[program]
 pub mod betting_platform {
