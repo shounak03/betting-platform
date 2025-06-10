@@ -3,11 +3,11 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ArrowDown } from "lucide-react";
 import Link from "next/link";
-import { Highlight } from "./ui/hero-highlight";
-import { TypewriterEffect, TypewriterEffectSmooth } from "./ui/typewriter-effect";
+import { Highlight } from "../ui/hero-highlight";
+import { TypewriterEffect, TypewriterEffectSmooth } from "../ui/typewriter-effect";
 import { text } from "stream/consumers";
-import { AnimatedTooltip } from "./ui/animated-tooltip";
-import { FlipWords } from "./ui/flip-words";
+import { AnimatedTooltip } from "../ui/animated-tooltip";
+import { FlipWords } from "../ui/flip-words";
 
 
 
@@ -85,8 +85,15 @@ const Hero = () => {
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] dark:bg-black"></div>
       <div className="container mx-auto px-6 relative z-10">
       <div className="flex items-center justify-center gap-14 text-xl">
-        <h1>How it works</h1>
-        <h1>FAQs</h1>
+        <Link href={"/#features"}>
+          <h1>Features</h1>
+        </Link>
+        <Link href={"/#how-it-works"}>
+          <h1>How it works</h1>
+        </Link>
+        <Link href={"/#faqs"}>
+          <h1>FAQs</h1>
+        </Link>
       </div>
 
 
