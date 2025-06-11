@@ -47,22 +47,22 @@ const FAQ = () => {
       question: "Can I create my own betting market?",
       answer: "Absolutely! One of our key features is allowing users to create custom prediction markets on any topic. You define the question, outcomes, resolution criteria, and timeframe. The community can then bet on your market."
     },
-    {
-      question: "What wallets are supported?",
-      answer: "We support all major Solana wallets including Phantom, Solflare, Sollet, and any wallet compatible with the Solana ecosystem. Simply connect your preferred wallet to start betting."
-    },
-    {
-      question: "Are there betting limits?",
-      answer: "Betting limits depend on the specific market and your account verification level. Most markets have minimum and maximum bet amounts displayed clearly. High-volume bettors may have access to higher limits."
-    },
-    {
-      question: "How are disputes handled?",
-      answer: "For custom markets, disputes are handled through our community governance system and designated resolvers. For major events, we rely on multiple authoritative data sources. We have a transparent appeals process for any contested outcomes."
-    },
-    {
-      question: "Is betting legal in my jurisdiction?",
-      answer: "Betting laws vary by jurisdiction. It's your responsibility to ensure that using prediction markets is legal in your location. We recommend consulting local regulations before participating."
-    },
+    // {
+    //   question: "What wallets are supported?",
+    //   answer: "We support all major Solana wallets including Phantom, Solflare, Sollet, and any wallet compatible with the Solana ecosystem. Simply connect your preferred wallet to start betting."
+    // },
+    // {
+    //   question: "Are there betting limits?",
+    //   answer: "Betting limits depend on the specific market and your account verification level. Most markets have minimum and maximum bet amounts displayed clearly. High-volume bettors may have access to higher limits."
+    // },
+    // {
+    //   question: "How are disputes handled?",
+    //   answer: "For custom markets, disputes are handled through our community governance system and designated resolvers. For major events, we rely on multiple authoritative data sources. We have a transparent appeals process for any contested outcomes."
+    // },
+    // {
+    //   question: "Is betting legal in my jurisdiction?",
+    //   answer: "Betting laws vary by jurisdiction. It's your responsibility to ensure that using prediction markets is legal in your location. We recommend consulting local regulations before participating."
+    // },
     {
       question: "Can I bet on multiple outcomes?",
       answer: "Yes, you can place multiple bets on different outcomes within the same market or across multiple markets. This allows you to hedge your bets and implement sophisticated betting strategies."

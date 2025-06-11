@@ -102,9 +102,9 @@ export function useBettingProgram() {
   // Initialize platform
   const initializePlatform = useMutation({
     mutationKey: ['betting', 'initialize-platform', { cluster }],
-    mutationFn: async ({ platformAuthority }: { platformAuthority: PublicKey }) => {
+    mutationFn: async () => {
       return await program.methods
-        .initializePlatform(platformAuthority)
+        .initializePlatform()
         .accountsPartial({
           platform: platformPda,
           payer: provider.wallet.publicKey,

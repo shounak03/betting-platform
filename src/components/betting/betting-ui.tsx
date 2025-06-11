@@ -17,26 +17,25 @@ import { CalendarDays, Clock, Users, TrendingUp, Trophy, RefreshCw } from 'lucid
 export function InitializePlatform() {
   const { initializePlatform, getPlatform } = useBettingProgram()
   const { publicKey } = useWallet()
-  const [authority, setAuthority] = useState('')
 
   const handleInitialize = async () => {
-    if (!authority.trim()) {
-      toast.error('Please enter a platform authority public key')
+    if (!publicKey) {
+      toast.error('Please connect your wallet first')
       return
     }
 
     try {
-      const authorityPubkey = new PublicKey(authority)
-      await initializePlatform.mutateAsync({ platformAuthority: authorityPubkey })
+      await initializePlatform.mutateAsync()
+      toast.success('Platform initialized successfully! You are now the platform owner.')
     } catch (error) {
       console.error('Error initializing platform:', error)
-      toast.error('Invalid public key format')
+      toast.error('Failed to initialize platform')
     }
   }
 
   if (getPlatform.data) {
     return (
-      <Card>
+      <Card className='mx-20'>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" />
@@ -71,22 +70,17 @@ export function InitializePlatform() {
       <CardHeader>
         <CardTitle>Initialize Platform</CardTitle>
         <CardDescription>
-          Initialize the betting platform with a platform authority
+          Initialize the betting platform. You will automatically become the platform owner.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="authority">Platform Authority Public Key</Label>
-          <Input
-            id="authority"
-            value={authority}
-            onChange={(e) => setAuthority(e.target.value)}
-            placeholder={publicKey?.toString() || 'Enter public key...'}
-          />
+        <div className="text-center p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground mb-2">Platform Owner:</p>
+          <p className="font-mono text-sm">{publicKey?.toString() || 'Connect wallet first'}</p>
         </div>
         <Button 
           onClick={handleInitialize} 
-          disabled={initializePlatform.isPending}
+          disabled={initializePlatform.isPending || !publicKey}
           className="w-full"
         >
           {initializePlatform.isPending ? 'Initializing...' : 'Initialize Platform'}
@@ -144,18 +138,24 @@ export function CreateBetForm() {
       }
 
       const response = await betId.json()
-      console.log('Bet created with ID:', response.betId);
+      console.log(response);
       
-      const receivedBetId = response.betId
 
-      // await createBet.mutateAsync({
-      //   betId: receivedBetId,
-      //   title: formData.title,
-      //   description: formData.description,
-      //   resolver: new PublicKey(formData.resolver),
-      //   endTime: endTimeTimestamp,
-      //   bettingAmount: bettingAmountLamports,
-      // })
+      
+      if(response){
+        console.log('BetId:', response);
+
+      const [isError, isSuccess] = await createBet.mutateAsync({
+        betId: response,
+        title: formData.title,
+        description: formData.description,
+        resolver: new PublicKey(formData.resolver),
+        endTime: endTimeTimestamp,
+        bettingAmount: bettingAmountLamports,
+      })}
+
+
+      
 
       setFormData({
         betId: '',
@@ -176,9 +176,15 @@ export function CreateBetForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
+        <div className='flex justify-center items-center gap-4 mx-20'>
+
         <Button className="w-full md:w-auto">
           Create New Bet
         </Button>
+        <Button className="w-full md:w-auto">
+          Your Bets
+        </Button>
+      </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -279,6 +285,8 @@ export function BetCard({ bet, betData }: { bet: any, betData: any }) {
   const { placeBet, resolveBet, claimWinnings, claimRefund, getUserBet } = useBettingProgram()
   const { publicKey } = useWallet()
   const [selectedSide, setSelectedSide] = useState<'A' | 'B'>('A')
+  const [showWarning, setShowWarning] = useState(false)
+  const [pendingSide, setPendingSide] = useState<'A' | 'B' | null>(null)
 
   const userBet = getUserBet(betData.id.toNumber(), publicKey)
   const isExpired = Date.now() / 1000 > betData.endTime.toNumber()
@@ -316,17 +324,31 @@ export function BetCard({ bet, betData }: { bet: any, betData: any }) {
     return (userAmount / winningSideAmount) * netPool
   }
 
-  const handlePlaceBet = async () => {
+  const handleSideSelection = (side: 'A' | 'B') => {
+    setPendingSide(side)
+    setShowWarning(true)
+  }
+
+  const handleConfirmBet = async () => {
+    if (!pendingSide) return
+    
     try {
       await placeBet.mutateAsync({
         betId: betData.id.toNumber(),
-        side: selectedSide,
+        side: pendingSide,
         amount: Number(betData.bettingAmount),
       })
       toast.success('Bet placed successfully!')
+      setShowWarning(false)
+      setPendingSide(null)
     } catch (error) {
       console.error('Error placing bet:', error)
     }
+  }
+
+  const handleCancelBet = () => {
+    setShowWarning(false)
+    setPendingSide(null)
   }
 
   const handleResolve = async (winner: 'A' | 'B') => {
@@ -455,20 +477,21 @@ export function BetCard({ bet, betData }: { bet: any, betData: any }) {
           {/* Place Bet */}
           {isActive && !isExpired && !userBet.data && publicKey && !publicKey.equals(betData.resolver) && (
             <div className="flex gap-2 w-full">
-              <select 
-                value={selectedSide} 
-                onChange={(e) => setSelectedSide(e.target.value as 'A' | 'B')}
-                className="px-3 py-2 border rounded-md"
-              >
-                <option value="A">Side A</option>
-                <option value="B">Side B</option>
-              </select>
               <Button 
-                onClick={handlePlaceBet} 
+                onClick={() => handleSideSelection('A')} 
                 disabled={placeBet.isPending}
+                variant="outline"
                 className="flex-1"
               >
-                {placeBet.isPending ? 'Placing...' : `Bet ${(Number(betData.bettingAmount) / LAMPORTS_PER_SOL).toFixed(2)} SOL`}
+                Bet {(Number(betData.bettingAmount) / LAMPORTS_PER_SOL).toFixed(2)} SOL on Side A
+              </Button>
+              <Button 
+                onClick={() => handleSideSelection('B')} 
+                disabled={placeBet.isPending}
+                variant="outline"
+                className="flex-1"
+              >
+                Bet {(Number(betData.bettingAmount) / LAMPORTS_PER_SOL).toFixed(2)} SOL on Side B
               </Button>
             </div>
           )}
@@ -518,6 +541,62 @@ export function BetCard({ bet, betData }: { bet: any, betData: any }) {
           )}
         </div>
       </CardContent>
+      
+      {/* Resolver Warning Dialog */}
+      <Dialog open={showWarning} onOpenChange={setShowWarning}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-orange-600">⚠️ Custom Resolver Warning</DialogTitle>
+            <DialogDescription>
+              This is a custom resolver-based bet. Please review the details carefully before proceeding.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="text-sm space-y-2">
+                <div>
+                  <span className="font-medium text-black" >Resolver Public Key:</span>
+                  <div className="font-mono text-xs mt-1 break-all bg-white text-black p-2 rounded border">
+                    {betData.resolver.toString()}
+                  </div>
+                </div>
+                <div className="text-orange-700 font-medium">
+                  ⚠️ Be sure to trust the resolver before placing any bets
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  The resolver has the authority to determine the outcome of this bet. Only bet if you trust this address.
+                </div>
+              </div>
+            </div>
+            
+            {/* {pendingSide && (
+              <div className="p-3 bg-blue-50 text-black rounded-lg">
+                <div className="text-sm">
+                  <div className="font-medium">You are about to bet:</div>
+                  <div>{(Number(betData.bettingAmount) / LAMPORTS_PER_SOL).toFixed(2)} SOL on Side {pendingSide}</div>
+                </div>
+              </div>
+            )} */}
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleCancelBet} 
+              variant="outline" 
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirmBet} 
+              disabled={placeBet.isPending}
+              className="flex-1 bg-orange-600 hover:bg-orange-700"
+            >
+              {placeBet.isPending ? 'Placing Bet...' : `Confirm ${(Number(betData.bettingAmount) / LAMPORTS_PER_SOL).toFixed(2)} Sol Bet`}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
@@ -528,7 +607,7 @@ export function BetsList() {
 
   if (getAllBets.isLoading) {
     return (
-      <div className="flex justify-center items-center h-32">
+      <div className="flex justify-center items-center h-32 mx-30">
         <RefreshCw className="h-6 w-6 animate-spin" />
       </div>
     )
@@ -536,7 +615,7 @@ export function BetsList() {
 
   if (!getAllBets.data || getAllBets.data.length === 0) {
     return (
-      <Card>
+      <Card className='mx-30'>
         <CardContent className="text-center py-8">
           <div className="text-muted-foreground">No bets found. Create the first bet!</div>
         </CardContent>
@@ -545,7 +624,7 @@ export function BetsList() {
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 mx-30">
       {getAllBets.data.map((bet) => (
         <BetCard key={bet.account.id.toString()} bet={bet} betData={bet.account} />
       ))}
@@ -563,8 +642,8 @@ export function BettingProgram() {
       
       {getPlatform.data && (
         <>
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Betting Platform</h2>
+          <div className="flex justify-between items-center mx-20">
+            {/* <h2 className="text-2xl font-bold ">Betting Platform</h2> */}
             <CreateBetForm />
           </div>
           <BetsList />

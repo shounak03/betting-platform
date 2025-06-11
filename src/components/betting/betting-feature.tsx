@@ -7,8 +7,9 @@ import { useBettingProgram } from './betting-data-access'
 import { BettingProgram } from './betting-ui'
 import { AppHero } from '../app-hero'
 import { ellipsify } from '@/lib/utils'
+import { DashboardFeature } from '../dashboard/dashboard-feature'
 
-export default function BettingFeature() {
+export default function   BettingFeature() {
   const { publicKey } = useWallet()
   const { programId } = useBettingProgram()
 
@@ -26,6 +27,7 @@ export default function BettingFeature() {
     </div>
   ) : (
     <div className="max-w-4xl mx-auto">
+      <DashboardFeature />
       <div className="hero py-[64px]">
         <div className="hero-content text-center">
           <div className="max-w-md">

@@ -17,12 +17,10 @@ pub mod betting_platform {
 
     use super::*;
 
-    pub fn initialize_platform(ctx: Context<InitializePlatform>,
-                                platform_authority: Pubkey,
-    ) -> Result<()> {
+    pub fn initialize_platform(ctx: Context<InitializePlatform>) -> Result<()> {
 
         let platform = &mut ctx.accounts.platform;
-        platform.authority = platform_authority;
+        platform.authority = ctx.accounts.payer.key();
         platform.total_bets = 0;
         platform.total_volume = 0;
         platform.bump =ctx.bumps.platform;

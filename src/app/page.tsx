@@ -6,6 +6,7 @@ import FAQ from '@/components/main-frontend/faq'
 
 export default function Home() {
   return <div>
+    {/* <DashboardFeature /> */}
     <Hero />
     <Features />
     <HowItWorks />

@@ -478,12 +478,7 @@ export type BettingPlatform = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "platformAuthority",
-          "type": "pubkey"
-        }
-      ]
+      "args": []
     },
     {
       "name": "placeBet",
