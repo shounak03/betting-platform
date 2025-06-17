@@ -41,7 +41,7 @@ const HowItWorks = () => {
         </div>
         
         <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 gap-8 mb-12 lg:mb-18">
             {steps.map((step, index) => (
               <div key={index} className="flex items-start gap-6 p-6 rounded-2xl bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 hover:bg-gray-800/50 transition-all duration-300 group">
                 <div className={`text-6xl font-bold ${step.color} group-hover:scale-110 transition-transform duration-300`}>
@@ -59,11 +59,11 @@ const HowItWorks = () => {
             ))}
           </div>
           
-          <div className="text-center">
+          {/* <div className="text-center">
             <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-12 py-4 text-lg rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105">
               Start Your First Bet
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

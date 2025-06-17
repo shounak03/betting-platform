@@ -3,6 +3,7 @@ import Features from '@/components/main-frontend/features'
 import Hero from '@/components/main-frontend/hero'
 import HowItWorks from '@/components/main-frontend/how-it-works'
 import FAQ from '@/components/main-frontend/faq'
+import Footer from '@/components/main-frontend/footer'
 
 export default function Home() {
   return <div>
@@ -11,6 +12,7 @@ export default function Home() {
     <Features />
     <HowItWorks />
     <FAQ />
+    <Footer />
     {/* <DashboardFeature /> */}
   </div> 
 }

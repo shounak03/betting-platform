@@ -16,7 +16,7 @@ export default function   BettingFeature() {
   return publicKey ? (
     <div>
       <AppHero 
-        title="Betting Platform" 
+        title="WagerVerse" 
         subtitle="Create bets, place wagers, and win rewards in a decentralized betting platform."
       >
         <p className="mb-6">

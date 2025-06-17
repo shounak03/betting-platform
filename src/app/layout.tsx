@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AppProviders } from '@/components/app-providers'
-import { AppLayout } from '@/components/app-layout'
 import React from 'react'
+
 
 export const metadata: Metadata = {
   title: 'Betting Platform',
@@ -20,12 +20,13 @@ const links: { label: string; path: string }[] = [
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`antialiased mx-20` }>
+      <body className={`antialiased mx-20 bg-black` }>
         <AppProviders>
           {/* <AppLayout links={links}>{children}</AppLayout>
           {} */}
           {children}
         </AppProviders>
+
       </body>
     </html>
   )

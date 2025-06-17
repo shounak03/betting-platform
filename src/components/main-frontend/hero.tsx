@@ -151,14 +151,14 @@ const Hero = () => {
             <div className="relative p-8 bg-white rounded-2xl shadow-2xl max-w-md w-full animate-fade-in delay-800">
               {/* Moving Border Effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 opacity-75 blur-sm animate-pulse"></div>
-              <div className="absolute inset-0.5 bg-white rounded-2xl"></div>
+              <div className="absolute inset-0.5 bg-black rounded-2xl"></div>
 
               {/* Content */}
               <div className="relative z-10">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+                <h3 className="text-2xl font-bold text-gray-50 mb-2 text-center">
                   Join the Waitlist
                 </h3>
-                <p className="text-gray-600 mb-6 text-center">
+                <p className="text-gray-400 mb-6 text-center">
                   Be among the first to experience the future of prediction markets
                 </p>
 

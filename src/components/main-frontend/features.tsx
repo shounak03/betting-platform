@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Flag, Coins } from "lucide-react";
+import { Cover } from "../ui/cover";
 
 const Features = () => {
   const features = [
@@ -28,14 +29,18 @@ const Features = () => {
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Why Choose Our Platform?
+            Why <span className="mr-1">
+              <Cover>
+                WagerVerse
+                </Cover>
+              </span>?
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Experience the future of decentralized betting with cutting-edge features built on Solana
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto lg:mb-14">
           {features.map((feature, index) => (
             <Card key={index} className="bg-gray-800/50 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all duration-300 hover:scale-105 hover:shadow-2xl group">
               <CardHeader className="text-center">

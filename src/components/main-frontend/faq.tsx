@@ -100,7 +100,7 @@ const FAQ = () => {
                   onClick={() => toggleFAQ(index)}
                   className="w-full px-6 py-6 text-left flex items-center justify-between focus:outline-none group"
                 >
-                  <h3 className="text-lg md:text-xl font-semibold text-white group-hover:text-purple-400 transition-colors duration-300">
+                  <h3 className="text-lg md:text-xl font-semibold text-white  transition-colors duration-300">
                     {faq.question}
                   </h3>
                   <div className="flex-shrink-0 ml-4">
@@ -125,7 +125,7 @@ const FAQ = () => {
             ))}
           </div>
 
-          <div className="text-center mt-12 p-8 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-2xl border border-purple-500/30">
+          <div className="text-center mt-12 p-8 bg-gray-800/30 rounded-2xl border border-purple-500/30">
             <h3 className="text-2xl font-bold text-white mb-4">
               Still have questions?
             </h3>

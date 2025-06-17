@@ -174,18 +174,17 @@ export function CreateBetForm() {
   }
 
   return (
+
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className='flex justify-center items-center gap-4 mx-20'>
 
-        <Button className="w-full md:w-auto">
-          Create New Bet
-        </Button>
-        <Button className="w-full md:w-auto">
-          Your Bets
-        </Button>
-      </div>
-      </DialogTrigger>
+
+          <Button className="w-full md:w-auto">
+            Create New Bet
+          </Button>
+          
+
+      </DialogTrigger>  
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Bet</DialogTitle>
@@ -194,19 +193,6 @@ export function CreateBetForm() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          {/* <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="bet-id" className="text-right">
-              Bet ID
-            </Label>
-            <Input
-              id="bet-id"
-              type="number"
-              value={formData.betId}
-              onChange={(e) => setFormData(prev => ({ ...prev, betId: e.target.value }))}
-              className="col-span-3"
-              placeholder="Unique bet ID"
-            />
-          </div> */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">
               Title
@@ -277,6 +263,7 @@ export function CreateBetForm() {
         </Button>
       </DialogContent>
     </Dialog>
+
   )
 }
 
@@ -303,6 +290,7 @@ export function BetCard({ bet, betData }: { bet: any, betData: any }) {
     if (betData.winner?.b) return 'Side B'
     return 'Not resolved'
   }
+  
 
   const getUserWinnings = () => {
     if (!userBet.data || !isResolved) return 0
@@ -448,8 +436,15 @@ export function BetCard({ bet, betData }: { bet: any, betData: any }) {
               }}
             ></div>
           </div>
-        </div>
+          </div>
 
+        {isExpired && !isResolved && (
+      <div className="p-3 bg-red-50 rounded-lg">
+        <div className="text-sm font-medium text-red-800">
+          Bet Ended. If not resolved till now, please contact the resolver or the creator. The bet amounts will be refunded to all the participants after 2 days of the end time in case of no resolution.
+        </div>
+      </div>
+    )}
         {isResolved && (
           <div className="p-3 bg-green-50 rounded-lg">
             <div className="text-sm font-medium text-green-800">
@@ -642,7 +637,7 @@ export function BettingProgram() {
       
       {getPlatform.data && (
         <>
-          <div className="flex justify-between items-center mx-20">
+          <div className="flex justify-center items-center mx-20">
             {/* <h2 className="text-2xl font-bold ">Betting Platform</h2> */}
             <CreateBetForm />
           </div>
